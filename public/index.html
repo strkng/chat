@@ -4,132 +4,60 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Supabase Chat</title>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-    }
-
-    #messages {
-      list-style: none;
-      padding: 20px;
-      margin: 0;
-      height: 80vh;
-      overflow-y: auto;
-    }
-
-    #messages li {
-      background: white;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-    }
-
-    form {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex;
-      background: white;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    #input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin-left: 10px;
-    }
-  </style>
 </head>
 <body>
 
-  <ul id="messages"></ul>
+  <h1>メッセージ送信</h1>
 
-  <form id="form">
-    <input id="input" autocomplete="off" placeholder="メッセージ"/>
-    <button>送信</button>
-  </form>
+  <input type="text" id="message" placeholder="メッセージ入力">
+  <button onclick="sendMessage()">送信</button>
+
+  <h2>メッセージ一覧</h2>
+  <ul id="messages"></ul>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
-    const SUPABASE_URL = "https://xorrwdceovxuhsbhhmkl.supabase.co";
+    const supabaseUrl = 'https://xorrwdceovxuhsbhhmkl.supabase.co';
 
-    const SUPABASE_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI";
+    const supabaseKey =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI';
 
-    const supabase = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const form = document.getElementById("form");
-    const input = document.getElementById("input");
-    const messages = document.getElementById("messages");
+    async function sendMessage() {
+      const text = document.getElementById('message').value;
 
-    async function loadMessages() {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .order("id", { ascending: true });
+      const { error } = await client
+        .from('messages')
+        .insert([{ text: text }]);
 
       if (error) {
-        console.error(error);
-        return;
+        alert('エラー: ' + error.message);
+        console.log(error);
+      } else {
+        alert('送信成功');
+        loadMessages();
       }
+    }
 
-      messages.innerHTML = "";
+    async function loadMessages() {
+      const { data, error } = await client
+        .from('messages')
+        .select('*')
+        .order('id', { ascending: false });
+
+      const ul = document.getElementById('messages');
+      ul.innerHTML = '';
 
       data.forEach(msg => {
-        const li = document.createElement("li");
+        const li = document.createElement('li');
         li.textContent = msg.text;
-        messages.appendChild(li);
+        ul.appendChild(li);
       });
     }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (!input.value) return;
-
-      const { error } = await supabase
-        .from("messages")
-        .insert([{ text: input.value }]);
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      input.value = "";
-      loadMessages();
-    });
-
     loadMessages();
-
-    supabase
-      .channel('messages-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages'
-        },
-        () => {
-          loadMessages();
-        }
-      )
-      .subscribe();
   </script>
 
 </body>
