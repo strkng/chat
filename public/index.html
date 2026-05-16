@@ -1,64 +1,135 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Supabase Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Login Chat</title>
 </head>
 <body>
 
-  <h1>メッセージ送信</h1>
+<h1>ログインチャット</h1>
 
-  <input type="text" id="message" placeholder="メッセージ入力">
-  <button onclick="sendMessage()">送信</button>
+<input type="email" id="email" placeholder="メール">
+<input type="password" id="password" placeholder="パスワード">
 
-  <h2>メッセージ一覧</h2>
-  <ul id="messages"></ul>
+<button onclick="signUp()">新規登録</button>
+<button onclick="login()">ログイン</button>
+<button onclick="logout()">ログアウト</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<hr>
 
-  <script>
-    const supabaseUrl = 'https://xorrwdceovxuhsbhhmkl.supabase.co';
+<input type="text" id="message" placeholder="メッセージ">
+<button onclick="sendMessage()">送信</button>
 
-    const supabaseKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI';
+<h2>メッセージ</h2>
+<ul id="messages"></ul>
 
-    const client = supabase.createClient(supabaseUrl, supabaseKey);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    async function sendMessage() {
-      const text = document.getElementById('message').value;
+<script>
+const supabaseUrl = 'https://xorrwdceovxuhsbhhmkl.supabase.co';
 
-      const { error } = await client
-        .from('messages')
-        .insert([{ text: text }]);
+const supabaseKey =
+'YOUR_ANON_KEY';
 
-      if (error) {
-        alert('エラー: ' + error.message);
-        console.log(error);
-      } else {
-        alert('送信成功');
-        loadMessages();
-      }
-    }
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function loadMessages() {
-      const { data, error } = await client
-        .from('messages')
-        .select('*')
-        .order('id', { ascending: false });
+async function signUp() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
 
-      const ul = document.getElementById('messages');
-      ul.innerHTML = '';
+  const { data, error } = await client.auth.signUp({
+    email,
+    password
+  });
 
-      data.forEach(msg => {
-        const li = document.createElement('li');
-        li.textContent = msg.text;
-        ul.appendChild(li);
-      });
-    }
+  if (error) {
+    alert(error.message);
+  } else {
+    alert('登録成功');
+    console.log(data);
 
+    alert('あなたのID:\n' + data.user.id);
+  }
+}
+
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  const { error } = await client.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    alert('ログイン成功');
     loadMessages();
-  </script>
+  }
+}
+
+async function logout() {
+  await client.auth.signOut();
+  alert('ログアウト');
+}
+
+async function sendMessage() {
+
+  const {
+    data: { user }
+  } = await client.auth.getUser();
+
+  if (!user) {
+    alert('ログインしてください');
+    return;
+  }
+
+  const text = document.getElementById('message').value;
+
+  const { error } = await client
+    .from('messages')
+    .insert([
+      {
+        text: text,
+        user_id: user.id
+      }
+    ]);
+
+  if (error) {
+    alert(error.message);
+  } else {
+    loadMessages();
+  }
+}
+
+async function loadMessages() {
+
+  const { data, error } = await client
+    .from('messages')
+    .select('*')
+    .order('id', { ascending: false });
+
+  const ul = document.getElementById('messages');
+
+  ul.innerHTML = '';
+
+  data.forEach(msg => {
+
+    const li = document.createElement('li');
+
+    li.textContent =
+      msg.user_id + ' : ' + msg.text;
+
+    ul.appendChild(li);
+
+  });
+
+}
+
+loadMessages();
+</script>
 
 </body>
 </html>
