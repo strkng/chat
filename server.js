@@ -3,28 +3,29 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
-app.use(express.static("public"));
-
 const server = http.createServer(app);
+const io = new Server(server);
 
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
+app.use(express.static(__dirname));
 
-app.get("/", (req, res) => {
-  res.send("Chat server running");
-});
+const messages = [];
 
 io.on("connection", (socket) => {
-  console.log("user connected");
 
-  socket.on("send_message", (data) => {
-    io.emit("receive_message", data);
+  // 過去メッセージ送信
+  socket.emit("load messages", messages);
+
+  // 新規メッセージ
+  socket.on("chat message", (msg) => {
+
+    messages.push(msg);
+
+    // 全員へ送信
+    io.emit("chat message", msg);
   });
+
 });
 
 server.listen(process.env.PORT || 3000, () => {
-  console.log("server started");
+  console.log("Server running");
 });
