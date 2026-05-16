@@ -1,31 +1,33 @@
 const express = require("express");
 const http = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(__dirname));
+// publicフォルダ配信
+app.use(express.static(path.join(__dirname, "public")));
 
 const messages = [];
 
 io.on("connection", (socket) => {
 
-  // 過去メッセージ送信
   socket.emit("load messages", messages);
 
-  // 新規メッセージ
   socket.on("chat message", (msg) => {
 
     messages.push(msg);
 
-    // 全員へ送信
     io.emit("chat message", msg);
+
   });
 
 });
 
-server.listen(process.env.PORT || 3000, () => {
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
   console.log("Server running");
 });
