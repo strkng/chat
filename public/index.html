@@ -4,12 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Supabase Login Chat</title>
+
+  <style>
+    body{
+      font-family:sans-serif;
+      max-width:600px;
+      margin:auto;
+      padding:20px;
+    }
+
+    input{
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      box-sizing:border-box;
+    }
+
+    button{
+      margin-top:10px;
+      padding:10px;
+      cursor:pointer;
+    }
+
+    li{
+      margin-top:10px;
+      padding:10px;
+      background:#f2f2f2;
+      border-radius:10px;
+      list-style:none;
+    }
+  </style>
 </head>
 <body>
 
 <h1>ログインチャット</h1>
 
-<input type="email" id="email" placeholder="メール">
+<input type="email" id="email" placeholder="メールアドレス">
 <input type="password" id="password" placeholder="パスワード">
 
 <button onclick="signUp()">新規登録</button>
@@ -21,106 +51,169 @@
 <input type="text" id="message" placeholder="メッセージ">
 <button onclick="sendMessage()">送信</button>
 
-<h2>メッセージ</h2>
+<h2>メッセージ一覧</h2>
+
 <ul id="messages"></ul>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const supabaseUrl = 'https://xorrwdceovxuhsbhhmkl.supabase.co';
+
+const supabaseUrl =
+'https://xorrwdceovxuhsbhhmkl.supabase.co';
 
 const supabaseKey =
-'YOUR_ANON_KEY';
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI';
 
-const client = supabase.createClient(supabaseUrl, supabaseKey);
+const client =
+supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 
-async function signUp() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+async function signUp(){
 
-  const { data, error } = await client.auth.signUp({
-    email,
-    password
-  });
+  const email =
+    document.getElementById('email').value;
 
-  if (error) {
+  const password =
+    document.getElementById('password').value;
+
+  const { data, error } =
+    await client.auth.signUp({
+      email,
+      password
+    });
+
+  if(error){
+
     alert(error.message);
-  } else {
+
+  }else{
+
     alert('登録成功');
-    console.log(data);
 
-    alert('あなたのID:\n' + data.user.id);
+    alert(
+      'あなたの識別ID:\n\n' +
+      data.user.id
+    );
+
+    console.log(data.user);
+
   }
+
 }
 
-async function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+async function login(){
 
-  const { error } = await client.auth.signInWithPassword({
-    email,
-    password
-  });
+  const email =
+    document.getElementById('email').value;
 
-  if (error) {
+  const password =
+    document.getElementById('password').value;
+
+  const { error } =
+    await client.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if(error){
+
     alert(error.message);
-  } else {
+
+  }else{
+
     alert('ログイン成功');
+
     loadMessages();
+
   }
+
 }
 
-async function logout() {
+async function logout(){
+
   await client.auth.signOut();
-  alert('ログアウト');
+
+  alert('ログアウトしました');
+
 }
 
-async function sendMessage() {
+async function sendMessage(){
 
   const {
     data: { user }
   } = await client.auth.getUser();
 
-  if (!user) {
+  if(!user){
+
     alert('ログインしてください');
+
     return;
+
   }
 
-  const text = document.getElementById('message').value;
+  const text =
+    document.getElementById('message').value;
 
-  const { error } = await client
-    .from('messages')
-    .insert([
-      {
-        text: text,
-        user_id: user.id
-      }
-    ]);
+  const { error } =
+    await client
+      .from('messages')
+      .insert([
+        {
+          text:text,
+          user_id:user.id
+        }
+      ]);
 
-  if (error) {
+  if(error){
+
     alert(error.message);
-  } else {
+
+    console.log(error);
+
+  }else{
+
+    document.getElementById('message').value='';
+
     loadMessages();
+
   }
+
 }
 
-async function loadMessages() {
+async function loadMessages(){
 
-  const { data, error } = await client
-    .from('messages')
-    .select('*')
-    .order('id', { ascending: false });
+  const { data, error } =
+    await client
+      .from('messages')
+      .select('*')
+      .order('id',{ascending:false});
 
-  const ul = document.getElementById('messages');
+  if(error){
 
-  ul.innerHTML = '';
+    console.log(error);
 
-  data.forEach(msg => {
+    return;
 
-    const li = document.createElement('li');
+  }
 
-    li.textContent =
-      msg.user_id + ' : ' + msg.text;
+  const ul =
+    document.getElementById('messages');
+
+  ul.innerHTML='';
+
+  data.forEach(msg=>{
+
+    const li =
+      document.createElement('li');
+
+    li.innerHTML =
+      '<b>ID:</b> ' +
+      msg.user_id +
+      '<br><br>' +
+      msg.text;
 
     ul.appendChild(li);
 
@@ -129,6 +222,7 @@ async function loadMessages() {
 }
 
 loadMessages();
+
 </script>
 
 </body>
