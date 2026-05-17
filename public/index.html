@@ -3,19 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>テスト</title>
+<title>Supabase Test</title>
 </head>
 
 <body>
 
-<h1>動作テスト</h1>
+<h1>Supabaseテスト</h1>
 
-<button onclick="test()">押す</button>
+<button onclick="test()">接続テスト</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-function test(){
-  alert("動いてます")
+
+const supabaseUrl =
+"https://xorrwdceovxuhsbhhmkl.supabase.co"
+
+const supabaseKey =
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI"
+
+const supabase =
+window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+)
+
+async function test(){
+
+  alert("ボタンOK")
+
+  console.log(supabase)
+
+  alert("Supabase OK")
 }
+
 </script>
 
 </body>
