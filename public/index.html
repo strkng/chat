@@ -12,9 +12,10 @@
 
 <button onclick="test()">接続テスト</button>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script type="module">
 
-<script>
+import { createClient }
+from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabaseUrl =
 "https://xorrwdceovxuhsbhhmkl.supabase.co"
@@ -23,19 +24,19 @@ const supabaseKey =
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI"
 
 const supabase =
-window.supabase.createClient(
+createClient(
   supabaseUrl,
   supabaseKey
 )
 
 async function test(){
 
-  alert("ボタンOK")
+  alert("Supabase OK")
 
   console.log(supabase)
-
-  alert("Supabase OK")
 }
+
+window.test = test
 
 </script>
 
