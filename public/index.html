@@ -3,227 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Supabase Login Chat</title>
+  <title>ログインチャット</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body{
-      font-family:sans-serif;
-      max-width:600px;
-      margin:auto;
-      padding:20px;
+    body {
+      font-family: sans-serif;
+      padding: 20px;
     }
 
-    input{
-      width:100%;
-      padding:10px;
-      margin-top:10px;
-      box-sizing:border-box;
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
     }
 
-    button{
-      margin-top:10px;
-      padding:10px;
-      cursor:pointer;
+    button {
+      padding: 10px 16px;
+      margin-right: 5px;
+      font-size: 16px;
     }
 
-    li{
-      margin-top:10px;
-      padding:10px;
-      background:#f2f2f2;
-      border-radius:10px;
-      list-style:none;
+    #messages {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 250px;
+      overflow-y: auto;
+    }
+
+    #admin {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-<h1>ログインチャット</h1>
+  <h1>ログインチャット</h1>
 
-<input type="email" id="email" placeholder="メールアドレス">
-<input type="password" id="password" placeholder="パスワード">
+  <input id="nickname" placeholder="ニックネーム">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-<button onclick="signUp()">新規登録</button>
-<button onclick="login()">ログイン</button>
-<button onclick="logout()">ログアウト</button>
+  <button onclick="signUp()">新規登録</button>
+  <button onclick="login()">ログイン</button>
+  <button onclick="logout()">ログアウト</button>
 
-<hr>
+  <div id="userInfo"></div>
+  <div id="admin"></div>
 
-<input type="text" id="message" placeholder="メッセージ">
-<button onclick="sendMessage()">送信</button>
+  <hr>
 
-<h2>メッセージ一覧</h2>
+  <input id="messageInput" placeholder="メッセージ">
+  <button onclick="sendMessage()">送信</button>
 
-<ul id="messages"></ul>
+  <div id="messages"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabaseUrl = "https://xorrwdceovxuhsbhhmkl.supabase.co"
 
-<script>
+    const supabaseKey = "YOUR_ANON_KEY"
 
-const supabaseUrl =
-'https://xorrwdceovxuhsbhhmkl.supabase.co';
+    const supabase = window.supabase.createClient(
+      supabaseUrl,
+      supabaseKey
+    )
 
-const supabaseKey =
-'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI';
+    async function signUp() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
+      const nickname = document.getElementById("nickname").value
 
-const client =
-supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      })
 
-async function signUp(){
+      if (error) {
+        alert(error.message)
+        return
+      }
 
-  const email =
-    document.getElementById('email').value;
+      const user = data.user
 
-  const password =
-    document.getElementById('password').value;
+      if (user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              nickname: nickname
+            }
+          ])
 
-  const { data, error } =
-    await client.auth.signUp({
-      email,
-      password
-    });
-
-  if(error){
-
-    alert(error.message);
-
-  }else{
-
-    alert('登録成功');
-
-    alert(
-      'あなたの識別ID:\n\n' +
-      data.user.id
-    );
-
-    console.log(data.user);
-
-  }
-
-}
-
-async function login(){
-
-  const email =
-    document.getElementById('email').value;
-
-  const password =
-    document.getElementById('password').value;
-
-  const { error } =
-    await client.auth.signInWithPassword({
-      email,
-      password
-    });
-
-  if(error){
-
-    alert(error.message);
-
-  }else{
-
-    alert('ログイン成功');
-
-    loadMessages();
-
-  }
-
-}
-
-async function logout(){
-
-  await client.auth.signOut();
-
-  alert('ログアウトしました');
-
-}
-
-async function sendMessage(){
-
-  const {
-    data: { user }
-  } = await client.auth.getUser();
-
-  if(!user){
-
-    alert('ログインしてください');
-
-    return;
-
-  }
-
-  const text =
-    document.getElementById('message').value;
-
-  const { error } =
-    await client
-      .from('messages')
-      .insert([
-        {
-          text:text,
-          user_id:user.id
+        if (profileError) {
+          alert(profileError.message)
+          return
         }
-      ]);
 
-  if(error){
+        alert("登録成功！")
+      }
+    }
 
-    alert(error.message);
+    async function login() {
+      const email = document.getElementById("email").value
+      const password = document.getElementById("password").value
 
-    console.log(error);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-  }else{
+      if (error) {
+        alert(error.message)
+        return
+      }
 
-    document.getElementById('message').value='';
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .single()
 
-    loadMessages();
+      document.getElementById("userInfo").innerText =
+        "ログイン中: " + profile.nickname
 
-  }
+      if (profile.is_admin) {
+        document.getElementById("admin").innerText = "👑 Admin"
+      } else {
+        document.getElementById("admin").innerText = ""
+      }
 
-}
+      loadMessages()
 
-async function loadMessages(){
+      alert("ログイン成功！")
+    }
 
-  const { data, error } =
-    await client
-      .from('messages')
-      .select('*')
-      .order('id',{ascending:false});
+    async function logout() {
+      await supabase.auth.signOut()
 
-  if(error){
+      document.getElementById("userInfo").innerText = ""
+      document.getElementById("admin").innerText = ""
 
-    console.log(error);
+      alert("ログアウトしました")
+    }
 
-    return;
+    async function sendMessage() {
+      const message = document.getElementById("messageInput").value
 
-  }
+      const {
+        data: { user }
+      } = await supabase.auth.getUser()
 
-  const ul =
-    document.getElementById('messages');
+      if (!user) {
+        alert("ログインしてください")
+        return
+      }
 
-  ul.innerHTML='';
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
 
-  data.forEach(msg=>{
+      await supabase
+        .from("messages")
+        .insert([
+          {
+            text: profile.nickname + ": " + message
+          }
+        ])
 
-    const li =
-      document.createElement('li');
+      document.getElementById("messageInput").value = ""
 
-    li.innerHTML =
-      '<b>ID:</b> ' +
-      msg.user_id +
-      '<br><br>' +
-      msg.text;
+      loadMessages()
+    }
 
-    ul.appendChild(li);
+    async function loadMessages() {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .order("id", { ascending: true })
 
-  });
+      const messagesDiv = document.getElementById("messages")
 
-}
+      messagesDiv.innerHTML = ""
 
-loadMessages();
+      data.forEach(msg => {
+        const div = document.createElement("div")
+        div.innerText = msg.text
+        messagesDiv.appendChild(div)
+      })
+    }
 
-</script>
+    loadMessages()
+  </script>
 
 </body>
 </html>
