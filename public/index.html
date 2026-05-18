@@ -4,24 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ログインチャット</title>
+<title>チャット</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
+
 body{
   font-family:sans-serif;
   background:#f5f5f5;
   padding:20px;
 }
 
-h1{
-  font-size:40px;
-}
-
 input{
   width:100%;
-  padding:14px;
+  padding:12px;
   margin-top:10px;
   border-radius:10px;
   border:1px solid #ccc;
@@ -30,11 +27,11 @@ input{
 
 button{
   width:100%;
-  padding:14px;
+  padding:12px;
   margin-top:10px;
   border:none;
   border-radius:10px;
-  background:#111;
+  background:black;
   color:white;
   font-size:16px;
 }
@@ -42,8 +39,8 @@ button{
 #messages{
   margin-top:20px;
   background:white;
-  padding:10px;
   border-radius:10px;
+  padding:10px;
 }
 
 .msg{
@@ -51,35 +48,33 @@ button{
   border-bottom:1px solid #ddd;
 }
 
-#status{
-  margin-top:10px;
-  font-weight:bold;
-  color:green;
-}
 </style>
 </head>
 <body>
 
 <h1>ログインチャット</h1>
 
-<div id="status">未ログイン</div>
-
 <input id="nickname" placeholder="ニックネーム">
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+<input id="email" placeholder="メールアドレス">
+<input id="password" type="password" placeholder="パスワード">
 
 <button onclick="signUp()">新規登録</button>
+
 <button onclick="login()">ログイン</button>
+
 <button onclick="logout()">ログアウト</button>
 
 <hr>
 
 <input id="message" placeholder="メッセージ">
+
 <button onclick="sendMessage()">送信</button>
 
 <div id="messages"></div>
 
 <script>
+
+alert("JS読み込み成功")
 
 const supabaseUrl =
 "https://xorrwdceovxuhsbhhmkl.supabase.co"
@@ -95,14 +90,13 @@ window.supabase.createClient(
 
 async function signUp(){
 
+  alert("新規登録ボタンOK")
+
   const email =
   document.getElementById("email").value
 
   const password =
   document.getElementById("password").value
-
-  const nickname =
-  document.getElementById("nickname").value
 
   const { data, error } =
   await supabase.auth.signUp({
@@ -115,24 +109,12 @@ async function signUp(){
     return
   }
 
-  if(data.user){
-
-    await supabase
-    .from("profiles")
-    .insert([
-      {
-        id:data.user.id,
-        nickname:nickname
-      }
-    ])
-
-    alert("新規登録成功！")
-    document.getElementById("status").innerText =
-    "登録完了"
-  }
+  alert("登録成功")
 }
 
 async function login(){
+
+  alert("ログインボタンOK")
 
   const email =
   document.getElementById("email").value
@@ -151,23 +133,19 @@ async function login(){
     return
   }
 
-  alert("ログイン成功！")
-
-  document.getElementById("status").innerText =
-  "ログイン中: " + data.user.email
+  alert("ログイン成功")
 }
 
 async function logout(){
 
   await supabase.auth.signOut()
 
-  alert("ログアウトしました")
-
-  document.getElementById("status").innerText =
-  "未ログイン"
+  alert("ログアウト成功")
 }
 
 async function sendMessage(){
+
+  alert("送信ボタンOK")
 
   const {
     data:{ user }
@@ -195,9 +173,7 @@ async function sendMessage(){
     return
   }
 
-  alert("送信成功！")
-
-  document.getElementById("message").value = ""
+  alert("送信成功")
 
   loadMessages()
 }
