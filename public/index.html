@@ -72,25 +72,28 @@ button{
 
 <div id="messages"></div>
 
-<script>
+<script type="module">
 
-alert("JS読み込み成功")
+import { createClient }
+from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabaseUrl =
-"https://xorrwdceovxuhsbhhmkl.supabase.co"
+'https://xorrwdceovxuhsbhhmkl.supabase.co'
 
 const supabaseKey =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI"
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI'
 
 const supabase =
-window.supabase.createClient(
+createClient(
   supabaseUrl,
   supabaseKey
 )
 
-async function signUp(){
+alert("JS成功")
 
-  alert("新規登録ボタンOK")
+window.signUp = async function(){
+
+  alert("登録ボタンOK")
 
   const email =
   document.getElementById("email").value
@@ -98,7 +101,7 @@ async function signUp(){
   const password =
   document.getElementById("password").value
 
-  const { data, error } =
+  const { error } =
   await supabase.auth.signUp({
     email,
     password
@@ -112,7 +115,7 @@ async function signUp(){
   alert("登録成功")
 }
 
-async function login(){
+window.login = async function(){
 
   alert("ログインボタンOK")
 
@@ -122,7 +125,7 @@ async function login(){
   const password =
   document.getElementById("password").value
 
-  const { data, error } =
+  const { error } =
   await supabase.auth.signInWithPassword({
     email,
     password
@@ -136,14 +139,14 @@ async function login(){
   alert("ログイン成功")
 }
 
-async function logout(){
+window.logout = async function(){
 
   await supabase.auth.signOut()
 
   alert("ログアウト成功")
 }
 
-async function sendMessage(){
+window.sendMessage = async function(){
 
   alert("送信ボタンOK")
 
@@ -174,39 +177,7 @@ async function sendMessage(){
   }
 
   alert("送信成功")
-
-  loadMessages()
 }
-
-async function loadMessages(){
-
-  const { data, error } =
-  await supabase
-  .from("messages")
-  .select("*")
-  .order("created_at",{ascending:false})
-
-  if(error){
-    alert(error.message)
-    return
-  }
-
-  const div =
-  document.getElementById("messages")
-
-  div.innerHTML = ""
-
-  data.forEach(msg=>{
-
-    div.innerHTML += `
-      <div class="msg">
-        ${msg.text}
-      </div>
-    `
-  })
-}
-
-loadMessages()
 
 </script>
 
