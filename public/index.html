@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>チャット</title>
-
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<title>ログインチャット</title>
 
 <style>
 
@@ -16,36 +14,51 @@ body{
   padding:20px;
 }
 
+h1{
+  font-size:50px;
+}
+
 input{
   width:100%;
-  padding:12px;
+  padding:15px;
   margin-top:10px;
-  border-radius:10px;
+  border-radius:15px;
   border:1px solid #ccc;
   box-sizing:border-box;
+  font-size:16px;
 }
 
 button{
   width:100%;
-  padding:12px;
+  padding:15px;
   margin-top:10px;
   border:none;
-  border-radius:10px;
+  border-radius:15px;
   background:black;
   color:white;
+  font-size:18px;
+}
+
+#status{
+  margin-top:15px;
+  font-weight:bold;
   font-size:16px;
 }
 
 #messages{
   margin-top:20px;
-  background:white;
-  border-radius:10px;
-  padding:10px;
 }
 
 .msg{
-  padding:10px;
-  border-bottom:1px solid #ddd;
+  background:white;
+  padding:12px;
+  border-radius:12px;
+  margin-top:10px;
+}
+
+.nickname{
+  font-weight:bold;
+  margin-bottom:5px;
 }
 
 </style>
@@ -55,7 +68,9 @@ button{
 <h1>ログインチャット</h1>
 
 <input id="nickname" placeholder="ニックネーム">
+
 <input id="email" placeholder="メールアドレス">
+
 <input id="password" type="password" placeholder="パスワード">
 
 <button onclick="signUp()">新規登録</button>
@@ -69,6 +84,8 @@ button{
 <input id="message" placeholder="メッセージ">
 
 <button onclick="sendMessage()">送信</button>
+
+<div id="status"></div>
 
 <div id="messages"></div>
 
@@ -89,11 +106,22 @@ createClient(
   supabaseKey
 )
 
-alert("JS成功")
+function showStatus(
+  text,
+  color="red"
+){
+
+  const status =
+  document.getElementById("status")
+
+  status.innerText = text
+  status.style.color = color
+}
 
 window.signUp = async function(){
 
-  alert("登録ボタンOK")
+  const nickname =
+  document.getElementById("nickname").value
 
   const email =
   document.getElementById("email").value
@@ -101,23 +129,36 @@ window.signUp = async function(){
   const password =
   document.getElementById("password").value
 
-  const { error } =
+  const { data, error } =
   await supabase.auth.signUp({
     email,
     password
   })
 
   if(error){
-    alert(error.message)
+    showStatus(error.message)
     return
   }
 
-  alert("登録成功")
+  if(data.user){
+
+    await supabase
+    .from("profiles")
+    .insert([
+      {
+        id:data.user.id,
+        nickname:nickname
+      }
+    ])
+
+    showStatus(
+      "新規登録成功",
+      "green"
+    )
+  }
 }
 
 window.login = async function(){
-
-  alert("ログインボタンOK")
 
   const email =
   document.getElementById("email").value
@@ -125,59 +166,125 @@ window.login = async function(){
   const password =
   document.getElementById("password").value
 
-  const { error } =
+  const { data, error } =
   await supabase.auth.signInWithPassword({
     email,
     password
   })
 
   if(error){
-    alert(error.message)
+    showStatus(error.message)
     return
   }
 
-  alert("ログイン成功")
+  showStatus(
+    "ログイン成功",
+    "green"
+  )
 }
 
 window.logout = async function(){
 
   await supabase.auth.signOut()
 
-  alert("ログアウト成功")
+  showStatus(
+    "ログアウトしました",
+    "green"
+  )
 }
 
 window.sendMessage = async function(){
-
-  alert("送信ボタンOK")
 
   const {
     data:{ user }
   } = await supabase.auth.getUser()
 
   if(!user){
-    alert("ログインしてください")
+    showStatus("ログインしてください")
     return
   }
 
   const text =
   document.getElementById("message").value
 
+  if(text.trim() === ""){
+    showStatus("メッセージを入力してください")
+    return
+  }
+
+  const { data:profile } =
+  await supabase
+  .from("profiles")
+  .select("nickname")
+  .eq("id",user.id)
+  .single()
+
+  const nickname =
+  profile?.nickname || "名無し"
+
   const { error } =
   await supabase
   .from("messages")
   .insert([
     {
-      text:text
+      text:text,
+      nickname:nickname,
+      user_id:user.id
     }
   ])
 
   if(error){
-    alert(error.message)
+    showStatus(error.message)
     return
   }
 
-  alert("送信成功")
+  showStatus(
+    "送信成功",
+    "green"
+  )
+
+  document.getElementById("message").value = ""
+
+  loadMessages()
 }
+
+async function loadMessages(){
+
+  const { data, error } =
+  await supabase
+  .from("messages")
+  .select("*")
+  .order(
+    "created_at",
+    {ascending:false}
+  )
+
+  if(error){
+    showStatus(error.message)
+    return
+  }
+
+  const div =
+  document.getElementById("messages")
+
+  div.innerHTML = ""
+
+  data.forEach(msg=>{
+
+    div.innerHTML += `
+      <div class="msg">
+        <div class="nickname">
+          ${msg.nickname || "名無し"}
+        </div>
+        <div>
+          ${msg.text}
+        </div>
+      </div>
+    `
+  })
+}
+
+loadMessages()
 
 </script>
 
