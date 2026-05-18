@@ -6,6 +6,8 @@
 
 <title>ログインチャット</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body{
   font-family:sans-serif;
@@ -14,61 +16,53 @@ body{
 }
 
 h1{
-  margin-bottom:20px;
+  font-size:40px;
 }
 
 input{
   width:100%;
-  padding:12px;
+  padding:14px;
   margin-top:10px;
-  box-sizing:border-box;
-  border-radius:8px;
+  border-radius:10px;
   border:1px solid #ccc;
+  box-sizing:border-box;
 }
 
 button{
-  padding:10px 16px;
+  width:100%;
+  padding:14px;
   margin-top:10px;
-  margin-right:5px;
   border:none;
-  border-radius:8px;
-  cursor:pointer;
+  border-radius:10px;
+  background:#111;
+  color:white;
+  font-size:16px;
 }
 
 #messages{
   margin-top:20px;
   background:white;
-  border-radius:10px;
   padding:10px;
-  height:350px;
-  overflow-y:auto;
+  border-radius:10px;
 }
 
-.message{
+.msg{
   padding:10px;
   border-bottom:1px solid #ddd;
 }
 
-.name{
-  font-weight:bold;
-}
-
-.admin{
-  color:red;
-}
-
-#userBox{
+#status{
   margin-top:10px;
-  padding:10px;
-  background:white;
-  border-radius:10px;
+  font-weight:bold;
+  color:green;
 }
 </style>
 </head>
-
 <body>
 
 <h1>ログインチャット</h1>
+
+<div id="status">未ログイン</div>
 
 <input id="nickname" placeholder="ニックネーム">
 <input id="email" placeholder="Email">
@@ -76,21 +70,16 @@ button{
 
 <button onclick="signUp()">新規登録</button>
 <button onclick="login()">ログイン</button>
-<button onclick="logoutUser()">ログアウト</button>
-
-<div id="userBox"></div>
+<button onclick="logout()">ログアウト</button>
 
 <hr>
 
-<input id="messageInput" placeholder="メッセージ">
+<input id="message" placeholder="メッセージ">
 <button onclick="sendMessage()">送信</button>
 
 <div id="messages"></div>
 
-<script type="module">
-
-import { createClient }
-from 'https://esm.sh/@supabase/supabase-js@2'
+<script>
 
 const supabaseUrl =
 "https://xorrwdceovxuhsbhhmkl.supabase.co"
@@ -99,7 +88,7 @@ const supabaseKey =
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI"
 
 const supabase =
-createClient(
+window.supabase.createClient(
   supabaseUrl,
   supabaseKey
 )
@@ -107,19 +96,19 @@ createClient(
 async function signUp(){
 
   const email =
-    document.getElementById("email").value
+  document.getElementById("email").value
 
   const password =
-    document.getElementById("password").value
+  document.getElementById("password").value
 
   const nickname =
-    document.getElementById("nickname").value
+  document.getElementById("nickname").value
 
   const { data, error } =
-    await supabase.auth.signUp({
-      email,
-      password
-    })
+  await supabase.auth.signUp({
+    email,
+    password
+  })
 
   if(error){
     alert(error.message)
@@ -129,74 +118,59 @@ async function signUp(){
   if(data.user){
 
     await supabase
-      .from("profiles")
-      .insert([
-        {
-          id:data.user.id,
-          nickname:nickname,
-          is_admin:false
-        }
-      ])
+    .from("profiles")
+    .insert([
+      {
+        id:data.user.id,
+        nickname:nickname
+      }
+    ])
 
-    alert("新規登録成功")
+    alert("新規登録成功！")
+    document.getElementById("status").innerText =
+    "登録完了"
   }
 }
 
 async function login(){
 
   const email =
-    document.getElementById("email").value
+  document.getElementById("email").value
 
   const password =
-    document.getElementById("password").value
+  document.getElementById("password").value
 
   const { data, error } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+  await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
 
   if(error){
     alert(error.message)
     return
   }
 
-  const { data: profile } =
-    await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", data.user.id)
-      .single()
+  alert("ログイン成功！")
 
-  let text =
-    "ログイン中: " +
-    profile.nickname
-
-  if(profile.is_admin){
-    text += " 👑Admin"
-  }
-
-  document.getElementById("userBox").innerText =
-    text
-
-  alert("ログイン成功")
-
-  loadMessages()
+  document.getElementById("status").innerText =
+  "ログイン中: " + data.user.email
 }
 
-async function logoutUser(){
+async function logout(){
 
   await supabase.auth.signOut()
 
-  document.getElementById("userBox").innerText = ""
-
   alert("ログアウトしました")
+
+  document.getElementById("status").innerText =
+  "未ログイン"
 }
 
 async function sendMessage(){
 
   const {
-    data:{user}
+    data:{ user }
   } = await supabase.auth.getUser()
 
   if(!user){
@@ -205,68 +179,58 @@ async function sendMessage(){
   }
 
   const text =
-    document.getElementById("messageInput").value
+  document.getElementById("message").value
 
-  const { data: profile } =
-    await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
-
+  const { error } =
   await supabase
-    .from("messages")
-    .insert([
-      {
-        text:text,
-        nickname:profile.nickname,
-        user_id:user.id
-      }
-    ])
+  .from("messages")
+  .insert([
+    {
+      text:text
+    }
+  ])
 
-  document.getElementById("messageInput").value = ""
+  if(error){
+    alert(error.message)
+    return
+  }
+
+  alert("送信成功！")
+
+  document.getElementById("message").value = ""
 
   loadMessages()
 }
 
 async function loadMessages(){
 
-  const { data } =
-    await supabase
-      .from("messages")
-      .select("*")
-      .order("created_at",{ascending:true})
+  const { data, error } =
+  await supabase
+  .from("messages")
+  .select("*")
+  .order("created_at",{ascending:false})
 
-  const messages =
-    document.getElementById("messages")
+  if(error){
+    alert(error.message)
+    return
+  }
 
-  messages.innerHTML = ""
+  const div =
+  document.getElementById("messages")
+
+  div.innerHTML = ""
 
   data.forEach(msg=>{
 
-    const div =
-      document.createElement("div")
-
-    div.className = "message"
-
-    let adminTag = ""
-
-    div.innerHTML =
-      "<span class='name'>" +
-      (msg.nickname || "名無し") +
-      "</span>: " +
-      msg.text
-
-    messages.appendChild(div)
+    div.innerHTML += `
+      <div class="msg">
+        ${msg.text}
+      </div>
+    `
   })
 }
 
 loadMessages()
-
-window.signUp = signUp
-window.login = login
-window.logoutUser = logoutUser
-window.sendMessage = sendMessage
 
 </script>
 
