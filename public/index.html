@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>ログインチャット</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
+
 body{
   font-family:sans-serif;
   background:#f5f5f5;
@@ -22,7 +22,7 @@ body{
 
 h1{
   font-size:48px;
-  margin-bottom:30px;
+  margin-bottom:20px;
 }
 
 .card{
@@ -35,8 +35,8 @@ h1{
 
 input{
   width:100%;
-  padding:16px;
-  margin-bottom:15px;
+  padding:15px;
+  margin-top:10px;
   border-radius:15px;
   border:1px solid #ccc;
   font-size:16px;
@@ -45,13 +45,14 @@ input{
 
 button{
   width:100%;
-  padding:18px;
+  padding:15px;
+  margin-top:10px;
   border:none;
   border-radius:15px;
   background:black;
   color:white;
-  font-size:18px;
-  margin-bottom:12px;
+  font-size:17px;
+  cursor:pointer;
 }
 
 button:hover{
@@ -62,8 +63,9 @@ button:hover{
   display:none;
 }
 
-#messages{
-  margin-top:20px;
+#status{
+  font-weight:bold;
+  margin-bottom:15px;
 }
 
 .message{
@@ -78,21 +80,21 @@ button:hover{
   margin-bottom:5px;
 }
 
-#status{
-  margin-bottom:15px;
-  font-weight:bold;
-}
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
 <h1>ログインチャット</h1>
 
-<div id="status">未ログイン</div>
+<div id="status">
+未ログイン
+</div>
 
 <!-- TOP -->
+
 <div id="topPage" class="card">
 
 <button onclick="showRegister()">
@@ -110,15 +112,24 @@ button:hover{
 </div>
 
 <!-- REGISTER -->
-<div id="registerPage" class="card hidden">
+
+<div id="registerPage"
+class="card hidden">
 
 <h2>新規登録</h2>
 
-<input id="registerNickname" placeholder="ニックネーム">
+<input
+id="registerNickname"
+placeholder="ニックネーム">
 
-<input id="registerEmail" placeholder="メールアドレス">
+<input
+id="registerEmail"
+placeholder="メールアドレス">
 
-<input id="registerPassword" type="password" placeholder="パスワード">
+<input
+id="registerPassword"
+type="password"
+placeholder="パスワード">
 
 <button onclick="signUp()">
 登録する
@@ -131,13 +142,20 @@ button:hover{
 </div>
 
 <!-- LOGIN -->
-<div id="loginPage" class="card hidden">
+
+<div id="loginPage"
+class="card hidden">
 
 <h2>ログイン</h2>
 
-<input id="loginEmail" placeholder="メールアドレス">
+<input
+id="loginEmail"
+placeholder="メールアドレス">
 
-<input id="loginPassword" type="password" placeholder="パスワード">
+<input
+id="loginPassword"
+type="password"
+placeholder="パスワード">
 
 <button onclick="login()">
 ログインする
@@ -150,9 +168,12 @@ button:hover{
 </div>
 
 <!-- CHAT -->
+
 <div class="card">
 
-<input id="message" placeholder="メッセージ">
+<input
+id="message"
+placeholder="メッセージ">
 
 <button onclick="sendMessage()">
 送信
@@ -164,170 +185,158 @@ button:hover{
 
 </div>
 
-<script>
+<script type="module">
+
+import { createClient }
+from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabaseUrl =
-"https://xorrwdceovxuhsbhhmkl.supabase.co"
+'https://xorrwdceovxuhsbhhmkl.supabase.co'
 
 const supabaseKey =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI"
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhvcnJ3ZGNlb3Z4dWhzYmhobWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjU2MzMsImV4cCI6MjA5NDUwMTYzM30.2il0VMMzcpgLt4MC-qP2NGIubgbbeHRVnMdDPZz7wRI'
 
 const supabase =
-window.supabase.createClient(
+createClient(
   supabaseUrl,
   supabaseKey
 )
 
-function showRegister(){
+window.showRegister = function(){
 
-  document.getElementById("topPage")
-    .classList.add("hidden")
+  document.getElementById(
+    "topPage"
+  ).classList.add("hidden")
 
-  document.getElementById("registerPage")
-    .classList.remove("hidden")
-
+  document.getElementById(
+    "registerPage"
+  ).classList.remove("hidden")
 }
 
-function showLogin(){
+window.showLogin = function(){
 
-  document.getElementById("topPage")
-    .classList.add("hidden")
+  document.getElementById(
+    "topPage"
+  ).classList.add("hidden")
 
-  document.getElementById("loginPage")
-    .classList.remove("hidden")
-
+  document.getElementById(
+    "loginPage"
+  ).classList.remove("hidden")
 }
 
-function backTop(){
+window.backTop = function(){
 
-  document.getElementById("topPage")
-    .classList.remove("hidden")
+  document.getElementById(
+    "topPage"
+  ).classList.remove("hidden")
 
-  document.getElementById("registerPage")
-    .classList.add("hidden")
+  document.getElementById(
+    "registerPage"
+  ).classList.add("hidden")
 
-  document.getElementById("loginPage")
-    .classList.add("hidden")
-
+  document.getElementById(
+    "loginPage"
+  ).classList.add("hidden")
 }
 
-async function signUp(){
+window.signUp = async function(){
 
   const nickname =
-    document.getElementById(
-      "registerNickname"
-    ).value
+  document.getElementById(
+    "registerNickname"
+  ).value
 
   const email =
-    document.getElementById(
-      "registerEmail"
-    ).value
+  document.getElementById(
+    "registerEmail"
+  ).value
 
   const password =
-    document.getElementById(
-      "registerPassword"
-    ).value
+  document.getElementById(
+    "registerPassword"
+  ).value
 
   const { data, error } =
-    await supabase.auth.signUp({
-      email,
-      password
-    })
+  await supabase.auth.signUp({
+    email,
+    password
+  })
 
   if(error){
-    alert("エラー: " + error.message)
+    alert(error.message)
     return
   }
 
-  if(data.user){
+  await supabase
+  .from("profiles")
+  .insert([
+    {
+      id:data.user.id,
+      nickname:nickname
+    }
+  ])
 
-    await supabase
-      .from("profiles")
-      .insert([
-        {
-          id:data.user.id,
-          nickname:nickname
-        }
-      ])
+  alert("新規登録成功")
 
-    alert("新規登録成功！")
-    backTop()
-  }
-
+  backTop()
 }
 
-async function login(){
+window.login = async function(){
 
   const email =
-    document.getElementById(
-      "loginEmail"
-    ).value
+  document.getElementById(
+    "loginEmail"
+  ).value
 
   const password =
-    document.getElementById(
-      "loginPassword"
-    ).value
+  document.getElementById(
+    "loginPassword"
+  ).value
 
-  const { error } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+  const { data, error } =
+  await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
 
   if(error){
-    alert("ログイン失敗: " + error.message)
+    alert(error.message)
     return
   }
 
-  alert("ログイン成功！")
+  const { data:profile } =
+  await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", data.user.id)
+  .single()
 
-  checkUser()
+  document.getElementById(
+    "status"
+  ).innerText =
+  "ログイン中: " +
+  profile.nickname
 
+  alert("ログイン成功")
+
+  loadMessages()
+
+  backTop()
 }
 
-async function logout(){
+window.logout = async function(){
 
   await supabase.auth.signOut()
 
+  document.getElementById(
+    "status"
+  ).innerText =
+  "未ログイン"
+
   alert("ログアウトしました")
-
-  document.getElementById("status")
-    .innerText = "未ログイン"
-
 }
 
-async function checkUser(){
-
-  const {
-    data:{ user }
-  } =
-  await supabase.auth.getUser()
-
-  if(!user){
-
-    document.getElementById("status")
-      .innerText = "未ログイン"
-
-    return
-  }
-
-  const { data } =
-    await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
-
-  const nickname =
-    data?.nickname || "名無し"
-
-  document.getElementById("status")
-    .innerText =
-      "ログイン中: " + nickname
-
-}
-
-async function sendMessage(){
+window.sendMessage = async function(){
 
   const {
     data:{ user }
@@ -340,77 +349,81 @@ async function sendMessage(){
   }
 
   const text =
-    document.getElementById("message").value
+  document.getElementById(
+    "message"
+  ).value
 
-  if(!text){
+  if(text.trim() === ""){
     alert("メッセージを入力してください")
     return
   }
 
   const { data:profile } =
-    await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
-
-  const nickname =
-    profile?.nickname || "名無し"
+  await supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", user.id)
+  .single()
 
   const { error } =
-    await supabase
-      .from("messages")
-      .insert([
-        {
-          text:text,
-          nickname:nickname
-        }
-      ])
+  await supabase
+  .from("messages")
+  .insert([
+    {
+      text:text,
+      nickname:profile.nickname,
+      user_id:user.id
+    }
+  ])
 
   if(error){
-    alert("送信エラー: " + error.message)
+    alert(error.message)
     return
   }
 
-  document.getElementById("message").value = ""
+  document.getElementById(
+    "message"
+  ).value = ""
 
   loadMessages()
-
 }
 
 async function loadMessages(){
 
   const { data } =
-    await supabase
-      .from("messages")
-      .select("*")
-      .order("created_at", {
-        ascending:false
-      })
+  await supabase
+  .from("messages")
+  .select("*")
+  .order(
+    "created_at",
+    {ascending:false}
+  )
 
-  const messagesDiv =
-    document.getElementById("messages")
+  const messages =
+  document.getElementById(
+    "messages"
+  )
 
-  messagesDiv.innerHTML = ""
+  messages.innerHTML = ""
 
   data.forEach(msg=>{
 
-    messagesDiv.innerHTML += `
+    messages.innerHTML += `
       <div class="message">
+
         <div class="nickname">
-          ${msg.nickname}
+          ${msg.nickname || "名無し"}
         </div>
+
         <div>
           ${msg.text}
         </div>
+
       </div>
     `
-
   })
-
 }
 
-checkUser()
 loadMessages()
 
 </script>
